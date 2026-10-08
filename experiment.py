@@ -96,7 +96,7 @@ def evaluate_scenario(label, param, errors, rng):
 
 
 # comparación pareada entre dos variantes cualesquiera (por ejemplo V3b contra V4)
-def compare_pair(errors, base_name, test_name, rng):
+def compare_pair(errors, base_name, test_name, rng, n_tests=1):
     base, test = errors[base_name], errors[test_name]
     low, high = bootstrap_reduction_ci(base, test, rng)
     try:
@@ -110,6 +110,8 @@ def compare_pair(errors, base_name, test_name, rng):
         "ci_low": low,
         "ci_high": high,
         "p_value": p,
+        # corrección de Bonferroni según el número de pares comparados
+        "p_adj": min(1.0, p * n_tests),
     }
 
 

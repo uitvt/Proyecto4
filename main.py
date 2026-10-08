@@ -57,20 +57,17 @@ def main():
     out = Path(args.out)
     rng = np.random.default_rng(cfg.seed)
 
-    # 1) conectividad base sin perturbaciones
+    #  conectividad base sin perturbaciones
     worst = run_baseline_check(cfg, rng)
     print(f"Error máximo sin ruido (debe ser ~0): {worst:.2e} m")
 
-    # 2) validación separada de cada filtro
-    dix = validate_dixon(cfg, rng)
+    # Dixon se valida con sigma = 4 dB y atípicos de +-25 dB (OE1
+    dix = validate_dixon(cfg.with_updates(sigma_x=4.0, outlier_mag=25.0), rng)
     smo = validate_smoothing(cfg, rng)
-    print("\n== Validación de filtros (sigma=6 dB) ==")
-    print(f"Dixon: detección={dix['detection_rate']:.3f}  falsos positivos={dix['false_positive_rate']:.3f}")
-    print("Por muestra (favorece a cualquier suavizado):")
-    print(f"  Gaussiano: {smo['gauss_sample_rmse_in']:.3f} -> {smo['gauss_sample_rmse_out']:.3f} dB ({smo['gauss_sample_reduction_pct']:.1f} %)")
-    print(f"  Kalman:    {smo['kalman_sample_rmse_in']:.3f} -> {smo['kalman_sample_rmse_out']:.3f} dB ({smo['kalman_sample_reduction_pct']:.1f} %)")
+    print("\n== Validación de filtros ==")
+    print(f"Dixon (sigma=4 dB, atípicos +-25 dB): detección={dix['detection_rate']:.3f}  falsos positivos={dix['false_positive_rate']:.3f}")
     print("Estimador final contra el promedio de la ventana depurada:")
-    print(f"  Promedio {smo['mean_estimator_rmse']:.3f} dB | Gaussiano {smo['gauss_estimator_rmse']:.3f} dB ({smo['gauss_vs_mean_pct']:.1f} %) | Kalman {smo['kalman_estimator_rmse']:.3f} dB ({smo['kalman_vs_mean_pct']:.1f} %)")
+    print(f"Promedio {smo['mean_estimator_rmse']:.3f} dB | Gaussiano {smo['gauss_estimator_rmse']:.3f} dB ({smo['gauss_vs_mean_pct']:.1f} %) | Kalman {smo['kalman_estimator_rmse']:.3f} dB ({smo['kalman_vs_mean_pct']:.1f} %)")
     save_rows_csv([{**dix, **smo}], out / "filter_validation.csv")
 
     # valor crítico de Dixon por simulación y barrido de detección
@@ -93,7 +90,9 @@ def main():
     run_group("S3", s3, rng, out)
 
     # figuras de apoyo para el informe
-    plot_cdf(s1["sigma=6"], "CDF del error, sigma = 6 dB", out / "S1_cdf_sigma6.png")
+    plot_cdf(s1["sigma=6"], "CDF del error, S1 (sigma = 6 dB)", out / "S1_cdf_sigma6.png")
+    plot_cdf(s2["outliers=5%"], "CDF del error, S2 (5 % de atípicos)", out / "S2_cdf_outliers5.png")
+    plot_cdf(s3["degraded_anchor"], "CDF del error, S3 (ancla degradada)", out / "S3_cdf_degraded.png")
     nodes = np.array([sample_node(cfg, rng).position() for _ in range(300)])
     plot_layout(np.array(cfg.anchors_xy, dtype=float), nodes, out / "layout.png")
 
@@ -115,12 +114,20 @@ def main():
     pair_rows = []
     for label, errs in (("S1 sigma=6", s1["sigma=6"]), ("S3 ancla degradada", s3["degraded_anchor"])):
         for base_name, test_name in (("V3", "V3b"), ("V3b", "V4"), ("V3", "V4")):
-            pair_rows.append({"scenario": label, **compare_pair(errs, base_name, test_name, rng)})
+            pair_rows.append({"scenario": label, **compare_pair(errs, base_name, test_name, rng, n_tests=3)})
     save_rows_csv(pair_rows, out / "pairwise.csv")
     print("\n== Comparaciones pareadas ==")
     for r in pair_rows:
-        print(f"{r['scenario']:<20}{r['base']:>4} -> {r['test']:<4}{r['reduction_pct']:>7.1f} %  IC95 [{r['ci_low']:.1f}, {r['ci_high']:.1f}]  p={r['p_value']:.4f}")
+        print(f"{r['scenario']:<20}{r['base']:>4} -> {r['test']:<4}{r['reduction_pct']:>7.1f} %  IC95 [{r['ci_low']:.1f}, {r['ci_high']:.1f}]  p_adj={r['p_adj']:.4f}")
+        
+    # verificación de los objetivos específicos 1 y 2 del informe
+    oe1 = dix["detection_rate"] >= 0.90 and dix["false_positive_rate"] <= 0.10
+    s3_pair = [r for r in pair_rows if r["scenario"].startswith("S3") and r["base"] == "V3b" and r["test"] == "V4"][0]
+    oe2 = s3_pair["reduction_pct"] >= 10.0 and s3_pair["p_adj"] < 0.05
+    print(f"\nOE1 (Dixon: detección >= 90 % y falsos positivos <= 10 %): {'CUMPLE' if oe1 else 'NO CUMPLE'}")
+    print(f"OE2 (V3b -> V4 con ancla degradada >= 10 %): {'CUMPLE' if oe2 else 'NO CUMPLE'}")
 
+       # criterio de éxito del objetivo general
     # criterio de éxito del objetivo general
     ref = evaluate_scenario("S1", "sigma=6", s1["sigma=6"], rng)
     v4 = [r for r in ref if r["variant"] == "V4"][0]

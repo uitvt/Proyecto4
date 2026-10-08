@@ -25,7 +25,7 @@ class SimConfig:
         "outlier_rate": 0.05,
         "outlier_mag": 15.0,
         # parámetros de los filtros
-        "dixon_q_crit": 0.450,
+        "dixon_q_crit": 0.493,
         "gauss_sigma": 1.0,
         "gauss_kernel_size": 5,
         "kalman_q": 0.01,
