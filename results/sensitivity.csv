@@ -1,0 +1,13 @@
+param;value;rmse
+gauss_sigma;0,500;1,681
+gauss_sigma;1,000;1,676
+gauss_sigma;2,000;1,642
+kalman_q;0,001;1,700
+kalman_q;0,010;1,729
+kalman_q;0,100;1,682
+weight_eps;0,001;1,661
+weight_eps;0,010;1,699
+weight_eps;0,100;1,648
+path_loss_exp;2,200;2,060
+path_loss_exp;2,700;1,726
+path_loss_exp;3,200;1,387

@@ -1,0 +1,2 @@
+detection_rate;false_positive_rate;gauss_sample_rmse_in;gauss_sample_rmse_out;gauss_sample_reduction_pct;kalman_sample_rmse_in;kalman_sample_rmse_out;kalman_sample_reduction_pct;mean_estimator_rmse;gauss_estimator_rmse;kalman_estimator_rmse;gauss_vs_mean_pct;kalman_vs_mean_pct
+0,976;0,059;6,507;3,633;44,166;3,633;1,854;48,962;1,527;1,527;1,527;0,027;0,031

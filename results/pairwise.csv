@@ -1,0 +1,7 @@
+scenario;base;test;reduction_pct;ci_low;ci_high;p_value;p_adj
+S1 sigma=6;V3;V3b;18,959;15,874;21,905;0,000;0,000
+S1 sigma=6;V3b;V4;20,349;18,006;22,674;0,000;0,000
+S1 sigma=6;V3;V4;35,450;32,543;38,314;0,000;0,000
+S3 ancla degradada;V3;V3b;16,969;14,247;19,672;0,000;0,000
+S3 ancla degradada;V3b;V4;16,197;13,582;18,787;0,000;0,000
+S3 ancla degradada;V3;V4;30,418;27,834;32,948;0,000;0,000

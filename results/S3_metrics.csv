@@ -1,0 +1,7 @@
+scenario;param;variant;rmse;median;p90;reduction_pct;ci_low;ci_high;p_adj
+S3;degraded_anchor;V0;1,569;1,220;2,372;0,000;nan;nan;nan
+S3;degraded_anchor;V1;1,591;1,230;2,441;-1,384;-2,266;-0,540;1,000
+S3;degraded_anchor;V2;1,591;1,220;2,434;-1,399;-2,263;-0,587;1,000
+S3;degraded_anchor;V3;1,592;1,220;2,463;-1,475;-2,359;-0,620;1,000
+S3;degraded_anchor;V3b;1,322;1,005;2,086;15,745;12,847;18,417;0,000
+S3;degraded_anchor;V4;1,108;0,873;1,714;29,392;26,518;32,082;0,000
